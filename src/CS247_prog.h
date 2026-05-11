@@ -10,23 +10,29 @@
 #include <cassert>
 #include <vector>
 #include <cmath>
+#include <algorithm>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 // framework includes
 #include "glslprogram.h"
 #include "vboquad.h"
 
-
 ////////////////
-// Structures //
+// Window size //
 ////////////////
-
-// window size
 const unsigned int gWindowWidth = 512;
 const unsigned int gWindowHeight = 512;
+
+//////////////////////
+// Global variables //
+//////////////////////
+
+static GLFWwindow* window;
 
 int current_scalar_field;
 int data_size;
@@ -35,32 +41,15 @@ bool en_streamline;
 bool en_pathline;
 
 int sampling_rate;
-float dt;
+double dt;
 
+char bmModifiers;
+int  clearColor;
 
-
-
-//////////////////////
-//  Global defines  //
-//////////////////////
-#define TIMER_FREQUENCY_MILLIS  50
-
-//////////////////////
-// Global variables //
-//////////////////////
-
-// Handle of the window we're rendering to
-static GLFWwindow* window;
-
-char bmModifiers;	// keyboard modifiers (e.g. ctrl,...)
-
-int clearColor;
-
-// data handling
-char* filenames[ 3 ];
-bool grid_data_loaded;
-bool scalar_data_loaded;
-unsigned short vol_dim[ 3 ];
+char* filenames[3];
+bool  grid_data_loaded;
+bool  scalar_data_loaded;
+unsigned short vol_dim[3];
 float* vector_array;
 float* scalar_fields;
 float* scalar_bounds;
@@ -68,16 +57,12 @@ float* scalar_bounds;
 GLuint scalar_field_texture;
 
 int num_scalar_fields;
-int num_timesteps; //stores number of time steps
-
+int num_timesteps;
 int loaded_file;
 int loaded_timestep;
 float timestep;
 
-int view_width, view_height; // height and width of entire view
-
-GLuint displayList_idx;
-
+int view_width, view_height;
 int toggle_xy;
 
 ////////////////
@@ -85,33 +70,18 @@ int toggle_xy;
 ////////////////
 
 void drawGlyphs();
-
 void computeStreamline(int x, int y);
-
 void computePathline(int x, int y, int t);
+void loadNextTimestep(void);
+void LoadData(char* base_filename);
+void LoadVectorData(const char* filename);
+void DownloadScalarFieldAsTexture(void);
+void reset_rendering_props(void);
+bool initApplication(int argc, char** argv);
 
-void loadNextTimestep( void );
+// Rendering objects
+VBOQuad       quad;
+GLSLProgram   vectorProgram;
+glm::mat4     model;
 
-void LoadData( char* base_filename );
-void LoadVectorData( const char* filename );
-
-void DownloadScalarFieldAsTexture( void );
-void initGL( void );
-
-void reset_rendering_props( void );
-
-// TODO: define data arrays, VAO and VBO
-// Hint: you need one for the glyphs, streamlines, pathlines
-
-// TODO: define colormap variables
-// Hint: you need a colormap mode (off/rainbow/cool-warm) and a blend factor
-
-// make quad to load texture to
-VBOQuad quad;
-
-// GLSL
-GLSLProgram vectorProgram;
-glm::mat4 model;
-
-
-#endif //CS247_PROG_H
+#endif // CS247_PROG_H
